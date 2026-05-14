@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Attendance Dashboard</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #ccc;
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logout {
+            background: black;
+            color: white;
+            padding: 8px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .welcome {
+            margin: 15px 0;
+            font-size: 16px;
+        }
+
+        form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+
+        input, select, button {
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        input, select {
+            flex: 1;
+            min-width: 180px;
+        }
+
+        button {
+            background: black;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background: #222;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        .Present {
+            color: green;
+            font-weight: bold;
+        }
+
+        .Absent {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="top-bar">
+        <h1>Company Attendance System</h1>
+        <a href="/logout" class="logout">Logout</a>
+    </div>
+
+    <div class="welcome">
+        Welcome, <strong>{{ username }}</strong>
+        ({{ session.role }})
+    </div>
+
+    <!-- Sirf Admin Attendance Add Kar Sakta Hai -->
+    {% if session.role == "Admin" %}
+    <form action="/add" method="POST">
+        <input
+            type="text"
+            name="name"
+            placeholder="Enter Full Name"
+            required
+        />
+
+        <select name="role" required>
+            <option value="Intern">Intern</option>
+            <option value="Contributor">Contributor</option>
+            <option value="Team Member">Team Member</option>
+        </select>
+
+        <select name="status" required>
+            <option value="Present">Present</option>
+            <option value="Absent">Absent</option>
+        </select>
+
+        <button type="submit">Mark Attendance</button>
+    </form>
+    {% endif %}
+
+    <hr>
+
+    <h2>Attendance Records</h2>
+
+    {% if data %}
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Date & Time</th>
+        </tr>
+
+        {% for row in data %}
+        <tr>
+            <td>{{ row.id }}</td>
+            <td>{{ row.name }}</td>
+            <td>{{ row.role }}</td>
+            <td class="{{ row.status }}">{{ row.status }}</td>
+            <td>{{ row.time }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+        <p>No attendance records yet.</p>
+    {% endif %}
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Attendance Dashboard</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #ccc;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        .logout {
+            text-decoration: none;
+            background: black;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+        }
+
+        .welcome {
+            margin: 15px 0;
+            font-size: 16px;
+        }
+
+        form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        input, select, button {
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        input, select {
+            flex: 1;
+            min-width: 180px;
+        }
+
+        button {
+            background: black;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background: #222;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        .note {
+            background: #eef6ff;
+            padding: 10px;
+            border-left: 4px solid #007bff;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .present { color: green; font-weight: bold; }
+        .absent { color: red; font-weight: bold; }
+        .late { color: orange; font-weight: bold; }
+
+        .section-title {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        /* ICON BUTTON */
+        .icon-btn {
+            font-size: 20px;
+            padding: 10px 15px;
+            background: black;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        /* POPUP */
+        .popup {
+            display: none;
+            background: #4CAF50;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        /* HIDDEN FORM */
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <h1>Attendance Dashboard</h1>
+        <a href="/logout" class="logout">Logout</a>
+    </div>
+
+    <!-- WELCOME -->
+    <div class="welcome">
+        Welcome, <strong>{{ username }}</strong> ({{ role }})
+    </div>
+
+    <!-- ROLE INFO -->
+    {% if role == "Admin" %}
+        <div class="note">
+            You are <b>Admin</b> — full system access enabled.
+        </div>
+    {% else %}
+        <div class="note">
+            You are <b>{{ role }}</b> — limited access (only own data).
+        </div>
+    {% endif %}
+
+    <!-- POPUP MESSAGE -->
+    {% if added %}
+    <div class="popup" id="popup">
+        🎉 New Employee Added Successfully!
+    </div>
+    {% endif %}
+
+    <!-- ================= ADMIN: ADD EMPLOYEE ================= -->
+    {% if role == "Admin" %}
+
+    <div class="section-title">➕ Employee Section</div>
+
+    <!-- ICON BUTTON -->
+    <button class="icon-btn" onclick="toggleForm()">➕ Add Intern / Employee</button>
+
+    <!-- EMPLOYEE FORM -->
+    <div id="empForm" class="hidden">
+
+        <form action="/add_user" method="POST">
+
+            <input type="text" name="username" placeholder="Employee Username" required>
+
+            <input type="password" name="password" placeholder="Password" required>
+
+            <select name="role" required>
+                <option value="Intern">Intern</option>
+                <option value="Contributor">Contributor</option>
+                <option value="Team Member">Team Member</option>
+            </select>
+
+            <button type="submit">Add Employee</button>
+        </form>
+
+    </div>
+
+    <!-- ================= ATTENDANCE ================= -->
+    <div class="section-title">📝 Mark Attendance</div>
+
+    <form action="/add" method="POST">
+
+        <input type="text" name="name" placeholder="Employee Name" required>
+
+        <select name="role" required>
+            <option value="Intern">Intern</option>
+            <option value="Contributor">Contributor</option>
+            <option value="Team Member">Team Member</option>
+        </select>
+
+        <select name="status" required>
+            <option value="Present">Present</option>
+            <option value="Absent">Absent</option>
+            <option value="Late">Late</option>
+        </select>
+
+        <button type="submit">Add Attendance</button>
+    </form>
+
+    {% endif %}
+
+    <!-- ================= TABLE ================= -->
+    <div class="section-title">📊 Attendance Records</div>
+
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Date & Time</th>
+        </tr>
+
+        {% for row in data %}
+        <tr>
+            <td>{{ row.id }}</td>
+            <td>{{ row.name }}</td>
+            <td>{{ row.role }}</td>
+            <td class="{{ row.status|lower }}">{{ row.status }}</td>
+            <td>{{ row.time }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="5">No attendance records found.</td>
+        </tr>
+        {% endfor %}
+
+    </table>
+
+</div>
+
+<!-- JS -->
+<script>
+function toggleForm() {
+    let form = document.getElementById("empForm");
+    form.classList.toggle("hidden");
+}
+
+// popup auto hide after 2 sec
+window.onload = function() {
+    let p = document.getElementById("popup");
+    if (p) {
+        p.style.display = "block";
+        setTimeout(() => {
+            p.style.display = "none";
+        }, 2000);
+    }
+}
+</script>
+
+</body>
+</html>
